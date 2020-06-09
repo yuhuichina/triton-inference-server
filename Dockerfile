@@ -45,7 +45,7 @@ WORKDIR /opt/pytorch
 RUN pip uninstall -y torch
 RUN cd pytorch && \
     pip install --upgrade setuptools && \
-    TORCH_CUDA_ARCH_LIST="5.2 6.0 6.1 7.0 7.5+PTX" \
+    TORCH_CUDA_ARCH_LIST="5.2 6.0 6.1 7.0 7.5 8.0+PTX" \
     CUDA_HOME="/usr/local/cuda" \
     CMAKE_PREFIX_PATH="$(dirname $(which conda))/../" \
     USE_DISTRIBUTED=0 USE_MIOPEN=0 USE_NCCL=0 \
