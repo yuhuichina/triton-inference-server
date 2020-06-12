@@ -39,6 +39,7 @@
 #include "src/core/scheduler.h"
 #include "src/core/scheduler_utils.h"
 #include "src/core/status.h"
+#include "src/core/sync_queue.h"
 
 namespace nvidia { namespace inferenceserver {
 
@@ -94,7 +95,9 @@ class DynamicBatchScheduler : public Scheduler {
       const uint32_t runner_id, const int nice,
       const std::shared_ptr<std::atomic<bool>>& rthread_exit,
       std::promise<bool>* is_initialized);
-  uint64_t GetDynamicBatch(const int64_t runner_id);
+  void BatcherThread(
+      const int nice, const std::shared_ptr<std::atomic<bool>>& rthread_exit);
+  uint64_t GetDynamicBatch();
   void FinalizeResponses();
 
   // Function the scheduler will call to initialize a runner.
@@ -123,6 +126,9 @@ class DynamicBatchScheduler : public Scheduler {
   // represented by this scheduler. If priority queues are not supported by the
   // scheduler, then priority zero entry is used as the single queue.
   PriorityQueue queue_;
+
+  SyncQueue<SyncQueue<std::vector<std::unique_ptr<InferenceRequest>>>*>
+      device_queue_;
 
   std::vector<std::unique_ptr<std::thread>> scheduler_threads_;
   std::vector<std::shared_ptr<std::atomic<bool>>> scheduler_threads_exit_;
