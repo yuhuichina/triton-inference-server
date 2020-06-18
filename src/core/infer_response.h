@@ -140,11 +140,6 @@ class InferenceResponse {
     // Reshape the output tensor if specified in output config.
     void Reshape(const ModelOutput* output_config);
 
-    // The batch size of the output, as understood by Triton. A
-    // batch-size of 0 indicates that the model doesn't support
-    // batching in a way that Triton understands.
-    uint32_t BatchSize() const { return batch_size_; }
-
     // Get information about the buffer allocated for this output
     // tensor's data. If no buffer is allocated 'buffer' will return
     // nullptr and the other returned values will be undefined.

@@ -858,9 +858,6 @@ TRITONSERVER_InferenceResponseOutputCount(
 /// \param shape Returns the shape of the output.
 /// \param dim_count Returns the number of dimensions of the returned
 /// shape.
-/// \param batch_size Returns the batch size of the output as
-/// understood by Triton. If the model does not support batching in a
-/// way that Triton understands the value will be 0.
 /// \param base Returns the tensor data for the output.
 /// \param byte_size Returns the size, in bytes, of the data.
 /// \param memory_type Returns the memory type of the data.
@@ -871,9 +868,9 @@ TRITONSERVER_InferenceResponseOutputCount(
 TRITONSERVER_EXPORT TRITONSERVER_Error* TRITONSERVER_InferenceResponseOutput(
     TRITONSERVER_InferenceResponse* inference_response, const uint32_t index,
     const char** name, TRITONSERVER_DataType* datatype, const int64_t** shape,
-    uint64_t* dim_count, uint32_t* batch_size, const void** base,
-    size_t* byte_size, TRITONSERVER_MemoryType* memory_type,
-    int64_t* memory_type_id, void** userp);
+    uint64_t* dim_count, const void** base, size_t* byte_size,
+    TRITONSERVER_MemoryType* memory_type, int64_t* memory_type_id,
+    void** userp);
 
 /// Get a classification label associated with an output for a given
 /// index.  The caller does not own the returned label and must not
