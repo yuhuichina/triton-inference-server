@@ -92,7 +92,8 @@ class EnsembleContext {
       void* buffer_userp, size_t byte_size, TRITONSERVER_MemoryType memory_type,
       int64_t memory_type_id);
   static void RequestComplete(
-      TRITONSERVER_InferenceRequest* request, void* userp);
+      TRITONSERVER_InferenceRequest* request,
+      const TRITONSERVER_RequestReleaseFlag flags, void* userp);
   static void ResponseComplete(
       TRITONSERVER_InferenceResponse* response, void* userp);
 
@@ -374,8 +375,20 @@ EnsembleContext::ResponseRelease(
 
 void
 EnsembleContext::RequestComplete(
-    TRITONSERVER_InferenceRequest* request, void* userp)
+    TRITONSERVER_InferenceRequest* request,
+    const TRITONSERVER_RequestReleaseFlag flags, void* userp)
 {
+  // Do nothing for NONE flags...
+  if (flags == TRITONSERVER_REQUEST_RELEASE_NONE) {
+    return;
+  }
+
+  // We expect only an ALL release... if we get anything else log an
+  // error but continue.
+  if ((flags & TRITONSERVER_REQUEST_RELEASE_ALL) == 0) {
+    LOG_ERROR << "expected ALL release flag, got " << flags;
+  }
+
   // Assuming request is released after all responses are completed so that
   // this function will be the trigger for next steps
   auto step_ptr = std::unique_ptr<Step>(reinterpret_cast<Step*>(userp));

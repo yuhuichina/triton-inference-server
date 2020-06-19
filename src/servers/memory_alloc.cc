@@ -175,9 +175,22 @@ ResponseRelease(
 }
 
 void
-InferRequestComplete(TRITONSERVER_InferenceRequest* request, void* userp)
+InferRequestComplete(
+    TRITONSERVER_InferenceRequest* request,
+    const TRITONSERVER_RequestReleaseFlag flags, void* userp)
 {
-  TRITONSERVER_InferenceRequestDelete(request);
+  // Do nothing for NONE flags...
+  if (flags == TRITONSERVER_REQUEST_RELEASE_NONE) {
+    return;
+  }
+
+  // We expect only an ALL release... if we get anything else log an
+  // error and don't free the request.
+  if ((flags & TRITONSERVER_REQUEST_RELEASE_ALL) == 0) {
+    std::cerr << "expected ALL release flag, got " << flags << std::endl;
+  } else {
+    TRITONSERVER_InferenceRequestDelete(request);
+  }
 }
 
 void

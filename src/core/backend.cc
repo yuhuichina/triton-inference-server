@@ -86,8 +86,21 @@ WarmupResponseComplete(TRITONSERVER_InferenceResponse* iresponse, void* userp)
 }
 
 void
-WarmupRequestComplete(TRITONSERVER_InferenceRequest* request, void* userp)
+WarmupRequestComplete(
+    TRITONSERVER_InferenceRequest* request,
+    const TRITONSERVER_RequestReleaseFlag flags, void* userp)
 {
+  // Do nothing for NONE flags...
+  if (flags == TRITONSERVER_REQUEST_RELEASE_NONE) {
+    return;
+  }
+
+  // We expect only an ALL release... if we get anything else log an
+  // error but continue releasing the request.
+  if ((flags & TRITONSERVER_REQUEST_RELEASE_ALL) == 0) {
+    LOG_ERROR << "expected ALL release flag, got " << flags;
+  }
+
   TRITONSERVER_InferenceRequestDelete(request);
   if (userp != nullptr) {
     auto warmup_promise = reinterpret_cast<std::promise<void>*>(userp);

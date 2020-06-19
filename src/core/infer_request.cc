@@ -72,9 +72,12 @@ NullResponseComplete(TRITONSERVER_InferenceResponse* iresponse, void* userp)
 }
 
 void
-NullRequestComplete(TRITONSERVER_InferenceRequest* request, void* userp)
+NullRequestComplete(
+    TRITONSERVER_InferenceRequest* request,
+    const TRITONSERVER_RequestReleaseFlag flags, void* userp)
 {
-  TRITONSERVER_InferenceRequestDelete(request);
+  LOG_TRITONSERVER_ERROR(
+      TRITONSERVER_InferenceRequestDelete(request), "deleting null request");
 }
 
 }  // namespace
@@ -166,10 +169,11 @@ InferenceRequest::Release(std::unique_ptr<InferenceRequest>&& request)
   std::unique_ptr<InferenceTrace> trace = std::move(request->trace_);
 #endif  // TRITON_ENABLE_TRACING
 
+  // For now we always do an ALL release...
   void* userp = request->release_userp_;
   request->release_fn_(
       reinterpret_cast<TRITONSERVER_InferenceRequest*>(request.release()),
-      userp);
+      TRITONSERVER_REQUEST_RELEASE_ALL, userp);
 
 #ifdef TRITON_ENABLE_TRACING
   // If tracing then record request end (after the callback completes
